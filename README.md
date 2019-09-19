@@ -1,16 +1,27 @@
 # spiewnik
+ Flutter mobile app to show church songs with chords.
 
-Śpiewnik made by RazorMeister
+------------
+# Language: PL
 
-## Getting Started
+## Table of contents
+* [General info](#general-info)
+* [Screenshots](#screenshots)
+* [Status](#status)
+* [Contact](#contact)
 
-This project is a starting point for a Flutter application.
+## General Info
+This is a simple mobile app written in flutter to connect via api with database with songs and show them with chords. In app you can search for specific song, change some settings.
 
-A few resources to get you started if this is your first Flutter project:
+## Screenshots
+![](https://imgur.com/rY0MFdO.png)
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+![](https://imgur.com/J8puERl.png)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![](https://imgur.com/Mozo46m.png)
+
+## Status
+Project is: _in_progress_.
+
+## Contact
+Created by [@RazorMeister](http://razormeister.pl/) - feel free to contact me!
