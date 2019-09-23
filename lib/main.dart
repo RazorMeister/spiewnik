@@ -9,6 +9,8 @@ import 'package:flutter_material_color_picker/flutter_material_color_picker.dart
 final String VERSION = '1.0.1';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   loadSettings().then((x) {
     runApp(MyApp());
   });
@@ -33,8 +35,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    super.initState();
-    _setPrimaryColor();
+
+      super.initState();
+      _setPrimaryColor();
+
   }
 
   Widget build(BuildContext context) {
@@ -74,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return prefs.setString('songsString', songsString);
   }
 
-   Future<String> _getSongsPrefs() async {
+  Future<String> _getSongsPrefs() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String data = '';
     try {
@@ -115,8 +119,8 @@ class _MyHomePageState extends State<MyHomePage> {
   _alertDuration() {
     const timeout = const Duration(seconds: 2);
     return new Timer(timeout, (() {
-        Navigator.pop(context);
-      }));
+      Navigator.pop(context);
+    }));
   }
 
   _getSongs() async {
@@ -258,7 +262,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         )
                     ),
                   )
-                ),
+              ),
             ),
           ),
           Expanded(
@@ -287,43 +291,43 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.info),
-            onPressed: () {
-              Navigator.push(context,
-                new MaterialPageRoute(builder: (context) => AuthorsPage()));
+        appBar: AppBar(
+          title: Text(widget.title),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.info),
+              onPressed: () {
+                Navigator.push(context,
+                    new MaterialPageRoute(builder: (context) => AuthorsPage()));
               },
-          ),
-          IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(context,
-                  new MaterialPageRoute(builder: (context) => SettingsPage(setThemeData)));
-            },
-          )
-        ],
-      ),
-      body: _isData ? MyUI() : (
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget> [
-              new CircularProgressIndicator(),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
-                  'Ładowanie...',
-                  style: TextStyle(color:  Theme.of(context).primaryColor),
-                ),
-              )
-            ]
-          )
+            ),
+            IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () {
+                Navigator.push(context,
+                    new MaterialPageRoute(builder: (context) => SettingsPage(setThemeData)));
+              },
+            )
+          ],
+        ),
+        body: _isData ? MyUI() : (
+            Center(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget> [
+                      new CircularProgressIndicator(),
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Text(
+                          'Ładowanie...',
+                          style: TextStyle(color:  Theme.of(context).primaryColor),
+                        ),
+                      )
+                    ]
+                )
+            )
         )
-     )
     );
   }
 }
@@ -497,7 +501,7 @@ class _DetailPageState extends State<DetailPage> {
         ),
       ),
       floatingActionButtonLocation:
-        FloatingActionButtonLocation.centerDocked,
+      FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         backgroundColor: (_showChords ? Theme.of(context).primaryColor : Colors.grey),
         child: const Icon(Icons.music_note), onPressed: () {
@@ -528,8 +532,8 @@ class _DetailPageState extends State<DetailPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 2.0),
                   child: Text(
-                      _fontSize.toInt().toString(),
-                      textAlign: TextAlign.center,
+                    _fontSize.toInt().toString(),
+                    textAlign: TextAlign.center,
                   ),
                 ),
 
@@ -539,11 +543,11 @@ class _DetailPageState extends State<DetailPage> {
               children: <Widget>[
                 if (_showChords) IconButton(icon: Icon(Icons.arrow_upward), onPressed: () {
                   _changeChords(1);
-                  },
+                },
                 ),
                 if (_showChords) IconButton(icon: Icon(Icons.arrow_downward), onPressed: () {
                   _changeChords(0);
-                  },
+                },
                 ),
               ],
             ),
@@ -642,59 +646,59 @@ class _SettingsPageState extends State<SettingsPage> {
       body: SingleChildScrollView(
         child: Card(
           child: Padding(
-              padding: EdgeInsets.all(10.0),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    TextFormField(
-                      initialValue: settings.defaultFontSize.toInt().toString(),
-                      decoration: InputDecoration(
-                        labelText: 'Domyślna wielkość czcionki:',
+            padding: EdgeInsets.all(10.0),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextFormField(
+                    initialValue: settings.defaultFontSize.toInt().toString(),
+                    decoration: InputDecoration(
+                      labelText: 'Domyślna wielkość czcionki:',
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (input) => (!(int.parse(input) is int) || (int.parse(input) > 30) || (int.parse(input) < 4)) ? 'Wprowadź liczbę od 4 do 30!' : null,
+                    onSaved: (input) => _defaultFontSize = double.parse(input),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Text('Pokazuj domyślnie akordy:'),
+                      Checkbox(
+                          value: _showChords,
+                          onChanged: (bool value) {
+                            setState(() {
+                              _showChords = value;
+                            });
+                          }
                       ),
-                      keyboardType: TextInputType.number,
-                      validator: (input) => (!(int.parse(input) is int) || (int.parse(input) > 30) || (int.parse(input) < 4)) ? 'Wprowadź liczbę od 4 do 30!' : null,
-                      onSaved: (input) => _defaultFontSize = double.parse(input),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Text('Pokazuj domyślnie akordy:'),
-                        Checkbox(
-                            value: _showChords,
-                            onChanged: (bool value) {
-                              setState(() {
-                                _showChords = value;
-                              });
-                            }
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Text('Kolor aplikacji:'),
-                        IconButton(
-                          icon: Icon(Icons.color_lens),
-                          onPressed: (){
-                            _openColorPicker();
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        RaisedButton(
-                          onPressed: _submit,
-                          child: Text('Zapisz!'),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Text('Kolor aplikacji:'),
+                      IconButton(
+                        icon: Icon(Icons.color_lens),
+                        onPressed: (){
+                          _openColorPicker();
+                        },
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      RaisedButton(
+                        onPressed: _submit,
+                        child: Text('Zapisz!'),
+                      ),
+                    ],
+                  )
+                ],
               ),
+            ),
           ),
         ),
       ),
@@ -781,9 +785,9 @@ Settings settings;
 
 Future<bool> loadSettings() async{
   settings = new Settings(
-      await getSettings('defaultFontSize', 'double'),
-      await getSettings('showChords', 'bool'),
-      await getSettings('primaryColor', 'int'),
+    await getSettings('defaultFontSize', 'double'),
+    await getSettings('showChords', 'bool'),
+    await getSettings('primaryColor', 'int'),
   );
 
   return true;

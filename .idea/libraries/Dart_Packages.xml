@@ -236,7 +236,7 @@
         <entry key="yaml">
           <value>
             <list>
-              <option value="$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/yaml-2.1.16/lib" />
+              <option value="$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/yaml-2.2.0/lib" />
             </list>
           </value>
         </entry>
@@ -273,7 +273,7 @@
       <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/typed_data-1.1.6/lib" />
       <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/vector_math-2.0.8/lib" />
       <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/xml-3.5.0/lib" />
-      <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/yaml-2.1.16/lib" />
+      <root url="file://$USER_HOME$/AppData/Roaming/Pub/Cache/hosted/pub.dartlang.org/yaml-2.2.0/lib" />
       <root url="file://P:/FlutterSDK/flutter/bin/cache/pkg/sky_engine/lib" />
       <root url="file://P:/FlutterSDK/flutter/packages/flutter/lib" />
       <root url="file://P:/FlutterSDK/flutter/packages/flutter_test/lib" />
