@@ -6,7 +6,7 @@ import 'dart:developer';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 
-final String VERSION = '1.0.1';
+final String VERSION = '1.0.2';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,10 +35,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-
       super.initState();
       _setPrimaryColor();
-
   }
 
   Widget build(BuildContext context) {
@@ -47,6 +45,9 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: _primaryColor,
         accentColor: Colors.grey,
+        cursorColor: Colors.grey,
+        textSelectionColor: Colors.grey,
+        textSelectionHandleColor: Colors.grey,
       ),
       home: MyHomePage(title: 'Śpiewnik', setThemeData: _setPrimaryColor),
     );
@@ -105,6 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
         i++;
       } else {
         chords = string;
+
         Song song = Song(title, text, chords);
         _allSongs.add(song);
         i = 0;
@@ -124,6 +126,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _getSongs() async {
+    bool reloaded = false;
+
     await http.get("http://malewand.vot.pl/spiewnik.php").then((response) { //http://malewand.vot.pl/spiewnik.php
       if (response.statusCode == 200) {
         String data = utf8.decode(response.bodyBytes);
@@ -133,6 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _isData = true;
           _songs.addAll(_allSongs);
         });
+        reloaded = true;
       } else {
         _getSongsPrefs().then((data) {
           _convertSongsString(data);
@@ -173,6 +178,8 @@ class _MyHomePageState extends State<MyHomePage> {
         _alertDuration();
       });
     });
+
+    return reloaded;
   }
 
   void _filterSearchResults(String query) {
@@ -206,12 +213,52 @@ class _MyHomePageState extends State<MyHomePage> {
         _isText = true;
       }
     });
-
   }
+
+  _reloadSongs() {
+    int count = _allSongs.length;
+    _allSongs.clear();
+    _songs.clear();
+    _getSongs().then((reloaded) {
+      if (count < _allSongs.length) {
+        showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Info'),
+                content: Text('Pobrano piosenki pomyślnie! Nowych piosenek: ' + (_allSongs.length - count).toString() + '.'),
+              );
+            }
+        );
+      } else {
+        showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Info'),
+                content: Text('Pobrano piosenki pomyślnie!'),
+              );
+            }
+        );
+      }
+      _alertDuration();
+    });
+  }
+
 
   @override
   void initState() {
     _getSongs();
+  }
+
+  Widget songTitle(List<Song> songs, int index) {
+    if (settings.titleUpperCase) {
+      return Text(songs[index].title.toUpperCase(), style: TextStyle(fontSize: settings.titleFontSize));
+    } else {
+      return Text(songs[index].title, style: TextStyle(fontSize: settings.titleFontSize));
+    }
   }
 
   Widget MyUI() {
@@ -272,7 +319,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemBuilder: (BuildContext context, int index) {
                   return Card(
                       child: ListTile(
-                        title: Text(_songs[index].title),
+                        title: songTitle(_songs, index),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                         onTap: (){
                           Navigator.push(context,
                               new MaterialPageRoute(builder: (context) => DetailPage(_songs[index])));
@@ -294,6 +342,12 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text(widget.title),
           actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.autorenew),
+              onPressed: () {
+                _reloadSongs();
+              },
+            ),
             IconButton(
               icon: Icon(Icons.info),
               onPressed: () {
@@ -415,12 +469,15 @@ class _DetailPageState extends State<DetailPage> {
 
   _changeChords(int type) {
     bool isDur = false;
+    bool isSeven = false;
+
     List<String> newCurrentChords = List<String>();
-    for(int i = 0; i < _currentChords.length; i++) {
+
+    for (int i = 0; i < _currentChords.length; i++) {
       String currentChords = _currentChords[i];
       String newChordsLine = '';
 
-      for(var currentChord in currentChords.split(' ')) {
+      for (var currentChord in currentChords.split(' ')) {
         currentChord = currentChord.trim();
         String newChord = '';
 
@@ -429,6 +486,14 @@ class _DetailPageState extends State<DetailPage> {
             isDur = true;
           } else {
             isDur = false;
+          }
+
+          if (currentChord.length > 1 && currentChord.contains('7')) {
+            isSeven = true;
+            log(currentChord);
+            //currentChord = currentChord.substring(0, currentChord.length-2);
+          } else {
+            isSeven = false;
           }
 
           currentChord = currentChord.toLowerCase();
@@ -455,11 +520,17 @@ class _DetailPageState extends State<DetailPage> {
               break;
             }
           }
+
           if (isChord) {
             newChord = _allChords[index];
+            if (isSeven) {
+              newChord += '7';
+            }
             if (isDur) {
               newChord = newChord[0].toUpperCase() + newChord.substring(1, newChord.length);
             }
+          } else if(currentChord != ' ') {
+            newChord = currentChord;
           }
         }
 
@@ -573,7 +644,9 @@ class _SettingsPageState extends State<SettingsPage> {
   final Function setThemeData;
   final formKey = GlobalKey<FormState>();
   double _defaultFontSize;
+  double _titleFontSize;
   bool _showChords;
+  bool _titleUpperCase;
   Color _primaryColor = Colors.red;
 
   _alertDuration() {
@@ -587,14 +660,19 @@ class _SettingsPageState extends State<SettingsPage> {
     if (formKey.currentState.validate()) {
       formKey.currentState.save();
       saveSettings('defaultFontSize', 'double', _defaultFontSize);
+      saveSettings('titleFontSize', 'double', _titleFontSize);
       saveSettings('showChords', 'bool', _showChords);
       saveSettings('primaryColor', 'int', _primaryColor.value);
+      saveSettings('titleUpperCase', 'bool', _titleUpperCase);
       settings.defaultFontSize = _defaultFontSize;
+      settings.titleFontSize = _titleFontSize;
       settings.showChords = _showChords;
       settings.primaryColor = _primaryColor.value;
+      settings.titleUpperCase = _titleUpperCase;
       setThemeData();
       showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text('Sukces!'),
@@ -636,6 +714,7 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     _showChords = settings.showChords;
     _primaryColor = Color(settings.primaryColor);
+    _titleUpperCase = settings.titleUpperCase;
   }
 
   Widget build(BuildContext context) {
@@ -655,10 +734,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   TextFormField(
                     initialValue: settings.defaultFontSize.toInt().toString(),
                     decoration: InputDecoration(
-                      labelText: 'Domyślna wielkość czcionki:',
+                      labelText: 'Domyślna wielkość czcionki (Domyślnie 20):',
                     ),
                     keyboardType: TextInputType.number,
-                    validator: (input) => (!(int.parse(input) is int) || (int.parse(input) > 30) || (int.parse(input) < 4)) ? 'Wprowadź liczbę od 4 do 30!' : null,
+                    validator: (input) => (!(int.parse(input) is int) || (int.parse(input) > 60) || (int.parse(input) < 4)) ? 'Wprowadź liczbę od 4 do 60!' : null,
                     onSaved: (input) => _defaultFontSize = double.parse(input),
                   ),
                   Row(
@@ -674,6 +753,29 @@ class _SettingsPageState extends State<SettingsPage> {
                           }
                       ),
                     ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Text('Wielkie litery w tytułach:'),
+                      Checkbox(
+                          value: _titleUpperCase,
+                          onChanged: (bool value) {
+                            setState(() {
+                              _titleUpperCase = value;
+                            });
+                          }
+                      ),
+                    ],
+                  ),
+                  TextFormField(
+                    initialValue: settings.titleFontSize.toInt().toString(),
+                    decoration: InputDecoration(
+                      labelText: 'Wielkość czcionki tytułów (Domyślnie 24):',
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (input) => (!(int.parse(input) is int) || (int.parse(input) > 60) || (int.parse(input) < 4)) ? 'Wprowadź liczbę od 4 do 60!' : null,
+                    onSaved: (input) => _titleFontSize = double.parse(input),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -773,11 +875,15 @@ class Settings
   double defaultFontSize;
   bool showChords;
   int primaryColor;
+  bool titleUpperCase;
+  double titleFontSize;
 
-  Settings(double _defaultFontSize, bool _showChords, int _primaryColor) {
+  Settings(double _defaultFontSize, bool _showChords, int _primaryColor, bool _titleUpperCase, double _titleFontSize) {
     this.defaultFontSize = _defaultFontSize ?? 20.0;
     this.showChords = _showChords ?? false;
     this.primaryColor = _primaryColor ?? 4280391411;
+    this.titleUpperCase = _titleUpperCase ?? false;
+    this.titleFontSize = _titleFontSize ?? 24.0;
   }
 }
 
@@ -788,6 +894,8 @@ Future<bool> loadSettings() async{
     await getSettings('defaultFontSize', 'double'),
     await getSettings('showChords', 'bool'),
     await getSettings('primaryColor', 'int'),
+    await getSettings('titleUpperCase', 'bool'),
+    await getSettings('titleFontSize', 'double'),
   );
 
   return true;
