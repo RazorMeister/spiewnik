@@ -109,7 +109,6 @@ class _DetailPageState extends State<DetailPage> {
 
   _changeChords(int type) {
     bool isDur = false;
-    bool isSeven = false;
 
     List<String> newCurrentChords = List<String>();
 
@@ -120,19 +119,29 @@ class _DetailPageState extends State<DetailPage> {
       for (var currentChord in currentChords.split(' ')) {
         currentChord = currentChord.trim();
         String newChord = '';
+        String prefix = "", sufix = "";
+        bool isSeven = false;
 
         if (currentChord != '') {
+          if (currentChord.length > 1) {
+            if (currentChord[0] == '(') {
+              prefix = "(";
+              currentChord = currentChord.substring(1, currentChord.length);
+            }
+            if (currentChord[currentChord.length-1] == ')') {
+              sufix = ")";
+              currentChord = currentChord.substring(0, currentChord.length-1);
+            }
+            if (currentChord.contains('7')) {
+              isSeven = true;
+              currentChord = currentChord.substring(0, currentChord.length-1);
+            }
+          }
+
           if (_upperCases.contains(currentChord[0])) {
             isDur = true;
           } else {
             isDur = false;
-          }
-
-          if (currentChord.length > 1 && currentChord.contains('7')) {
-            isSeven = true;
-            //currentChord = currentChord.substring(0, currentChord.length-2);
-          } else {
-            isSeven = false;
           }
 
           currentChord = currentChord.toLowerCase();
@@ -162,6 +171,14 @@ class _DetailPageState extends State<DetailPage> {
 
           if (isChord) {
             newChord = _allChords[index];
+            if (prefix != "") {
+              newChord = prefix + newChord;
+            }
+
+            if (sufix != "") {
+              newChord += sufix;
+            }
+
             if (isSeven) {
               newChord += '7';
             }

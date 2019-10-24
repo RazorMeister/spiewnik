@@ -12,7 +12,6 @@ import '../utils/main.dart';
 import '../models/song_model.dart';
 import '../models/settings_model.dart';
 
-
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title, this.setThemeData}) : super(key: key);
 
@@ -28,6 +27,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final Function setThemeData;
 
+  bool _isLoadingFirst = false;
   bool _isData = false;
   bool _isText = false;
   List<Song> _allSongs = <Song>[];
@@ -66,6 +66,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _getSongs() async {
     bool reloaded = false;
+    setState(() {
+      _isLoadingFirst = true;
+    });
 
     await http.get("http://malewand.vot.pl/spiewnik.php").then((response) { //http://malewand.vot.pl/spiewnik.php
       if (response.statusCode == 200) {
@@ -124,6 +127,10 @@ class _MyHomePageState extends State<MyHomePage> {
         );
         Utils.alertDuration(context);
       });
+    });
+
+    setState(() {
+      _isLoadingFirst = false;
     });
 
     return reloaded;
@@ -280,7 +287,10 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Expanded(
             child: Scrollbar(
-              child: ListView.builder(
+              child: _songs.length == 0 ?
+              Center(child: Text("Nie znaleziono takich piosenek.", style: TextStyle(fontSize: 20)))
+                  :
+              ListView.builder(
                 itemCount: _songs.length,
                 itemBuilder: (BuildContext context, int index) {
                   return Card(
@@ -341,10 +351,29 @@ class _MyHomePageState extends State<MyHomePage> {
               title: Text(widget.title),
               actions: <Widget>[
                 IconButton(
-                  icon: Icon(Icons.autorenew),
+                  icon: Icon(Icons.info_outline),
                   onPressed: () {
-                    _reloadSongs();
+                    showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Info'),
+                            content: Text('Ilość piosenek w bazie: ' + _allSongs.length.toString()),
+                          );
+                        }
+                    );
+                    Utils.alertDuration(context);
                   },
+                ),
+                Visibility(
+                  child: IconButton(
+                    icon: Icon(Icons.autorenew),
+                    onPressed: () {
+                      _reloadSongs();
+                    },
+                  ),
+                  visible: !_isLoadingFirst,
                 ),
               ],
             ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
 
-final String VERSION = '1.0.3';
+final String VERSION = '1.0.4';
 
 class AuthorsPage extends StatelessWidget {
   @override
@@ -22,7 +22,7 @@ class AuthorsPage extends StatelessWidget {
         child: Container(
           margin: EdgeInsets.only(left: 3.0, right: 3.0),
           child: SizedBox(
-            height: 200,
+            height: 250,
             child: Card(
               child: Padding(
                 padding: EdgeInsets.all(12.0),
@@ -43,6 +43,8 @@ class AuthorsPage extends StatelessWidget {
                       children: <Widget>[
                         Text('Baza piosenek:', style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.bold)),
                         Text('ks. Maciej Lewandowski'),
+                        Text('&'),
+                        Text('Stanisław Wołowski'),
                       ],
                     ),
                     Divider(),

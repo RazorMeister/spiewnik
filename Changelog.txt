@@ -1,0 +1,11 @@
+Version 1.0.4
+1. Możliwość odświeżenia listy piosenek aktywna dopiero po jej pobraniu.
+2. Akordy występujące bezpośrednio przy nawiasie można transponować.
+3. Podczas wyszukiwania dodano informacje o braku znalezionych piosenek.
+4. Dodanie przycisku info na stronie głównej, który pokazuje liczbę piosenek w bazie.
+
+Version: 1.0.3
+1. Dodanie ostatnich piosenek,
+2. Dodanie menu bocznego,
+3. Więcej ustawień,
+4. Dodanie systemu playlist.
