@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' show utf8;
+import 'dart:developer';
 
 import 'authors_page.dart';
 import 'settings_page.dart';
@@ -11,6 +12,7 @@ import '../utils/main.dart';
 
 import '../models/song_model.dart';
 import '../models/settings_model.dart';
+
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title, this.setThemeData}) : super(key: key);
@@ -33,34 +35,64 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Song> _allSongs = <Song>[];
   List<Song> _songs = <Song>[];
   List<Song> _recents = <Song>[];
+  String _polishAlphabet = "aąbcćdeęfghijklłmnńoóprsśtuvwxyzźż0123456789";
+  var _showCategories = Map();
 
   TextEditingController editingController = TextEditingController();
 
   _convertSongsString(String data) {
     int i = -1;
-    int id = 0;
-    String title, text, chords;
+    int id;
+    String category, title, text, chords, created;
 
     for (var string in data.split("@")) {
       if (i == -1) {
         i++;
       } else if (i == 0) {
-        title = string;
+        id = int.parse(string);
         i++;
       } else if (i == 1) {
+        category = string;
+        i++;
+      } else if (i == 2) {
+        title = string;
+        i++;
+      } else if (i == 3) {
         text = string;
         i++;
-      } else {
+      } else if (i == 4) {
         chords = string;
+        i++;
+      } else {
+        created = string;
 
-        Song song = Song(id++, title, text, chords);
+        _showCategories[category] = true;
+
+        Song song = Song(id, category, title, text, chords, created);
         _allSongs.add(song);
         i = 0;
       }
     }
 
     _allSongs.sort((a, b) {
-      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+      int aLower = _polishAlphabet.length, bLower = _polishAlphabet.length;
+      int j = 0;
+
+      do {
+        for (int i=0; i<_polishAlphabet.length; i++) {
+          if (_polishAlphabet[i] == a.title[j].toLowerCase())
+            aLower = i;
+          if (_polishAlphabet[i] == b.title[j].toLowerCase())
+            bLower = i;
+        }
+        if (a.title.length == j+1 || b.title.length == j+1)
+          break;
+
+        j++;
+      } while (aLower == bLower);
+
+
+      return aLower.compareTo(bLower);
     });
   }
 
@@ -70,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _isLoadingFirst = true;
     });
 
-    await http.get("http://malewand.vot.pl/spiewnik.php").then((response) { //http://malewand.vot.pl/spiewnik.php
+    await http.get("http://malewand.vot.pl/spiewnikV2.php").then((response) { //http://malewand.vot.pl/spiewnikV2.php
       if (response.statusCode == 200) {
         String data = utf8.decode(response.bodyBytes);
         Utils.saveCache('songsString', 'String', data);
@@ -105,6 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       }
     }).catchError((requestError) {
+      log(requestError.toString());
       Utils.getCache('songsString', 'String').then((data) {
         if (data == null) {
           data = '';
@@ -142,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if(query.isNotEmpty) {
       List<Song> dummyListData = List<Song>();
       dummySearchList.forEach((item) {
-        if(item.title.toLowerCase().contains(query.toLowerCase())) {
+        if(item.title.toLowerCase().contains(query.toLowerCase()) || (settings.showCategory && item.category.toLowerCase().contains(query.toLowerCase()))) {
           dummyListData.add(item);
         }
       });
@@ -152,9 +185,15 @@ class _MyHomePageState extends State<MyHomePage> {
       });
       return;
     } else {
+      List<Song> dummyListData = List<Song>();
+      dummySearchList.forEach((item) {
+        if(_showCategories.containsKey(item.category) && _showCategories[item.category]) {
+          dummyListData.add(item);
+        }
+      });
       setState(() {
         _songs.clear();
-        _songs.addAll(_allSongs);
+        _songs.addAll(dummyListData);
       });
     }
   }
@@ -226,11 +265,36 @@ class _MyHomePageState extends State<MyHomePage> {
     _getSongs();
   }
 
+  Widget checkboxCategory(String title, bool boolValue) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text(title),
+        Checkbox(
+          value: boolValue,
+          onChanged: (bool value) {
+            setState(() {
+              _showCategories[title] = value;
+              });
+          },
+        )
+      ],
+    );
+  }
+
   Widget songTitle(List<Song> songs, int index) {
     if (settings.titleUpperCase) {
       return Text(songs[index].title.toUpperCase(), style: TextStyle(fontSize: settings.titleFontSize));
     } else {
       return Text(songs[index].title, style: TextStyle(fontSize: settings.titleFontSize));
+    }
+  }
+
+  Widget songCategory(List<Song> songs, int index) {
+    if (settings.showCategory) {
+      return Text('Okres: ' + songs[index].category);
+    } else {
+      return null;
     }
   }
 
@@ -296,6 +360,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   return Card(
                       child: ListTile(
                           title: songTitle(_songs, index),
+                          subtitle: songCategory(_songs, index),
                           contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                           onTap: (){
                             _addRecent(_songs[index]);
@@ -329,6 +394,7 @@ class _MyHomePageState extends State<MyHomePage> {
             return Card(
                 child: ListTile(
                   title: songTitle(_recents, index),
+                  subtitle: songCategory(_recents, index),
                   contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                   onTap: (){
                     Navigator.push(context,
@@ -350,22 +416,6 @@ class _MyHomePageState extends State<MyHomePage> {
             appBar: AppBar(
               title: Text(widget.title),
               actions: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.info_outline),
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Info'),
-                            content: Text('Ilość piosenek w bazie: ' + _allSongs.length.toString()),
-                          );
-                        }
-                    );
-                    Utils.alertDuration(context);
-                  },
-                ),
                 Visibility(
                   child: IconButton(
                     icon: Icon(Icons.autorenew),
@@ -375,12 +425,35 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   visible: !_isLoadingFirst,
                 ),
+                IconButton(
+                  icon: Icon(Icons.info_outline),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Informacje'),
+                            content: Text('Ilość piosenek w bazie: ' + _allSongs.length.toString()),
+                          );
+                        }
+                    );
+                    Utils.alertDuration(context);
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.sort),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (_) {
+                          return MyDialogContent(showCategories: _showCategories, refreshData: _filterSearchResults);
+                        });
+                  },
+                ),
               ],
             ),
             drawer: Drawer(
-              // Add a ListView to the drawer. This ensures the user can scroll
-              // through the options in the drawer if there isn't enough vertical
-              // space to fit everything.
               child: ListView(
                 // Important: Remove any padding from the ListView.
                 padding: EdgeInsets.zero,
@@ -494,5 +567,76 @@ class _MyHomePageState extends State<MyHomePage> {
             )
         )
     );
+  }
+}
+
+class MyDialogContent extends StatefulWidget {
+  MyDialogContent({
+    Key key,
+    this.showCategories,
+    this.refreshData,
+  }): super(key: key);
+
+  final showCategories;
+  final Function refreshData;
+
+  @override
+  _MyDialogContentState createState() => new _MyDialogContentState(showCategories, refreshData);
+}
+
+class _MyDialogContentState extends State<MyDialogContent> {
+  _MyDialogContentState(this.showCategories, this.refreshData);
+
+  final showCategories;
+  final Function refreshData;
+
+  test() {
+    List<Widget> categories = <Widget>[];
+
+    showCategories.forEach((key, value) => {
+      categories.add(
+          new Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Text(key),
+              Checkbox(
+                  value: showCategories[key],
+                  onChanged: (bool newValue) {
+                    setState(() {
+                      showCategories[key] = newValue;
+                    });
+                  }
+              ),
+            ],
+          )
+        )
+    });
+
+    return categories;
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    test();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+      return AlertDialog(
+        title: Text('Filtrowanie'),
+        content: Column(
+          children: test(),
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: new Text("Zapisz"),
+            onPressed: () {
+              Navigator.of(context).pop();
+              refreshData("");
+            },
+          ),
+        ],
+      );
   }
 }

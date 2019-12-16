@@ -91,6 +91,14 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
     }
   }
 
+  Widget songCategory(List<Song> songs, int index) {
+    if (settings.showCategory) {
+      return Text('Okres: ' + songs[index].category);
+    } else {
+      return null;
+    }
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -147,6 +155,7 @@ class _PlaylistDetailsPageState extends State<PlaylistDetailsPage> {
                         onPressed: () => deleteConfirmation(index),
                     ),
                     title: songTitle(_playlist.songs, index),
+                    subtitle: songCategory(_playlist.songs, index),
                     contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                     onTap: (){
                       Navigator.push(context,

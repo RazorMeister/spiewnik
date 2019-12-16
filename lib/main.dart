@@ -63,6 +63,7 @@ Future<bool> loadSettings() async{
     await Utils.getCache('titleUpperCase', 'bool'),
     await Utils.getCache('titleFontSize', 'double'),
     await Utils.getCache('screenOn', 'bool'),
+    await Utils.getCache('showCategory', 'bool'),
   );
 
   return true;

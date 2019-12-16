@@ -26,6 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _titleUpperCase;
   Color _primaryColor = Colors.red;
   bool _screenOn;
+  bool _showCategory;
 
 
   _submit() {
@@ -38,6 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
       Utils.saveCache('primaryColor', 'int', _primaryColor.value);
       Utils.saveCache('titleUpperCase', 'bool', _titleUpperCase);
       Utils.saveCache('screenOn', 'bool', _screenOn);
+      Utils.saveCache('showCategory', 'bool', _showCategory);
 
       settings.defaultFontSize = _defaultFontSize;
       settings.titleFontSize = _titleFontSize;
@@ -45,6 +47,8 @@ class _SettingsPageState extends State<SettingsPage> {
       settings.primaryColor = _primaryColor.value;
       settings.titleUpperCase = _titleUpperCase;
       settings.screenOn = _screenOn;
+      settings.showCategory = _showCategory;
+
       Screen.keepOn(_screenOn);
 
       setThemeData();
@@ -95,6 +99,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _primaryColor = Color(settings.primaryColor);
     _titleUpperCase = settings.titleUpperCase;
     _screenOn = settings.screenOn;
+    _showCategory = settings.showCategory;
   }
 
   Widget build(BuildContext context) {
@@ -143,6 +148,20 @@ class _SettingsPageState extends State<SettingsPage> {
                           onChanged: (bool value) {
                             setState(() {
                               _titleUpperCase = value;
+                            });
+                          }
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Text('Pokazuj okres:'),
+                      Checkbox(
+                          value: _showCategory,
+                          onChanged: (bool value) {
+                            setState(() {
+                              _showCategory = value;
                             });
                           }
                       ),

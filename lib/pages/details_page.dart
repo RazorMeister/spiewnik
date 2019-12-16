@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/song_model.dart';
 import '../models/settings_model.dart';
+import '../utils/main.dart';
 
 class DetailPage extends StatefulWidget {
   final Song song;
@@ -213,7 +214,66 @@ class _DetailPageState extends State<DetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text(song.title)
+          title: Text(song.title),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.info_outline),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Info'),
+                        content: Container(
+                          height: 80,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text('ID: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  Text(song.id.toString()),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text('Tytuł: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  Text(song.shorterTitle()),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text('Okres: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  Text(song.category),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text('Dodana: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  Text(song.created),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: <Widget>[
+                          FlatButton(
+                            child: new Text("Close"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    }
+                );
+              },
+            ),
+          ],
       ),
       body: SingleChildScrollView(
         child: Container(

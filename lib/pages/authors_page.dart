@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
 
-final String VERSION = '1.0.4';
+final String VERSION = '1.0.5';
 
 class AuthorsPage extends StatelessWidget {
   @override

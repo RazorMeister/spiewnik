@@ -1,4 +1,9 @@
-Version 1.0.4
+Version: 1.0.5
+1. Poprawiono sortowanie (tak, aby działało alfabetycznie z polskimi znakami).
+2. Dodano szczegółowe informacje o piosenkach.
+3. Dodano katerogie do piosenek oraz filtrowanie poszczególnych kategorii.
+
+Version: 1.0.4
 1. Możliwość odświeżenia listy piosenek aktywna dopiero po jej pobraniu.
 2. Akordy występujące bezpośrednio przy nawiasie można transponować.
 3. Podczas wyszukiwania dodano informacje o braku znalezionych piosenek.
